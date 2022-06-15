@@ -13,7 +13,6 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "moduleResolution": "node",
-    "baseUrl": "source/",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
