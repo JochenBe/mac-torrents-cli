@@ -21,7 +21,7 @@ const get = (url: string): Promise<string> =>
     });
   });
 
-type Post = {
+export type Post = {
   title: string;
   href: string;
 };
