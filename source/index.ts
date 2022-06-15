@@ -3,40 +3,85 @@
 import cliSelect from "cli-select";
 import chalk from "chalk";
 
-import { searchPosts, getTorrent, Post } from "./mactorrents";
+import { searchPosts, getRecentPosts, getTorrent, Post } from "./mactorrents";
 import { downloadTorrent, openTorrent } from "./torrent";
 
-const s = process.argv.splice(2).join(" ");
+const successChalk = chalk.green;
+const progressChalk = chalk.yellow;
+const errorChalk = chalk.red;
 
-console.log(`Searching for "${s}"...`);
-
-const selected = chalk.green("⬇");
+const selectedChalk = successChalk;
+const unselectedSymbol = " ";
+const selectedSymbol = selectedChalk("⬇");
 const valueRenderer = (post: Post, selected: boolean = true) =>
-  selected ? chalk.green(post.title) : post.title;
+  selected ? selectedChalk(post.title) : post.title;
 
-searchPosts(s).then((posts) => {
+const posts = (posts: Post[]) =>
   cliSelect({
     values: posts,
-    selected,
-    unselected: " ",
+    selected: selectedSymbol,
+    unselected: unselectedSymbol,
     valueRenderer,
   })
     .then(({ value }) => {
-      console.log(`${selected} ${valueRenderer(value)}`);
-      console.log("Fetching torrent file url...");
+      console.log(`${selectedSymbol} ${valueRenderer(value)}`);
+      console.log(`${progressChalk("⚁")} Fetching torrent file url...`);
       return getTorrent(value.href);
     })
     .then((torrent) => {
       if (!torrent) {
-        console.error("Failed to fetch torrent file url");
+        console.error(errorChalk("Failed to fetch torrent file url."));
         return;
       }
 
-      console.log("Downloading torrent file...");
+      console.log(`${progressChalk("⚂")} Downloading torrent file...`);
       return downloadTorrent(torrent);
     })
     .then((path) => {
+      if (!path) {
+        console.error(errorChalk("Failed to download torrent file."));
+        return;
+      }
+
       openTorrent(path);
-      console.log("Done.");
+      console.log(`${progressChalk("⚃")} Done.`);
     });
-});
+
+const search = (argv: string[]) => {
+  if (argv.length == 0) {
+    console.error(errorChalk("No search query given."));
+    return;
+  }
+
+  const s = argv.join(" ");
+  console.log(`${progressChalk("⚀")} Searching for "${s}"...`);
+  searchPosts(s).then(posts);
+};
+
+const recent = () => {
+  console.log(`${progressChalk("⚀")} Fetching recent posts...`);
+  getRecentPosts().then(posts);
+};
+
+const help = () => {
+  console.log(
+    `
+
+mac-torrents <command>
+
+Usage:
+
+mac-torrents <query>        Search for torrents
+mac-torrents search <query> Search for torrents
+mac-torrents recent         Show recent torrents
+mac-torrents help           Show this help message
+
+  `.trim()
+  );
+};
+
+const argv = process.argv.splice(2);
+if (argv.length == 0 || argv[0] == "help") help();
+else if (argv[0] == "recent") recent();
+else if (argv[0] == "search") search(argv.slice(1));
+else search(argv);
