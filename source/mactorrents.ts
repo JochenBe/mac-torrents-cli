@@ -4,11 +4,12 @@ import dns from "dns";
 
 import * as cheerio from "cheerio";
 
-const url = "https://www.torrentmac.net";
+const domain = "www.torrentmac.net";
+const url = `https://${domain}`;
 
 export const lookup = (): Promise<void> =>
   new Promise((resolve, reject) => {
-    dns.lookup(url, (err) => {
+    dns.lookup(domain, (err) => {
       if (err) reject();
       else resolve();
     });
@@ -38,8 +39,48 @@ export type Post = {
   href: string;
 };
 
-const getPosts = (url: string): Promise<Post[]> =>
+export const getTopPosts = (): Promise<Post[]> =>
   get(url).then((data) => {
+    let posts: Post[] = [];
+
+    const $ = cheerio.load(data);
+    $(".wpp-post-title").each((_, pt) => {
+      const postTitle = $(pt);
+
+      const title = postTitle.text().trim();
+      if (title == "") return;
+
+      const href = postTitle.attr("href")?.trim();
+      if (!href) return;
+
+      posts.push({ title, href });
+    });
+
+    return posts;
+  });
+
+export const getRecentPosts = (): Promise<Post[]> =>
+  get(url).then((data) => {
+    let posts: Post[] = [];
+
+    const $ = cheerio.load(data);
+    $(".post-title-small a").each((_, pt) => {
+      const postTitle = $(pt);
+
+      const title = postTitle.attr("title")?.trim();
+      if (!title) return;
+
+      const href = postTitle.attr("href")?.trim();
+      if (!href) return;
+
+      posts.push({ title, href });
+    });
+
+    return posts;
+  });
+
+export const searchPosts = (s: string): Promise<Post[]> =>
+  get(path.join(url, "/?s=" + encodeURIComponent(s))).then((data) => {
     let posts: Post[] = [];
 
     const $ = cheerio.load(data);
@@ -57,10 +98,6 @@ const getPosts = (url: string): Promise<Post[]> =>
 
     return posts;
   });
-
-export const getRecentPosts = (): Promise<Post[]> => getPosts(url);
-export const searchPosts = (s: string): Promise<Post[]> =>
-  getPosts(path.join(url, "/?s=" + encodeURIComponent(s)));
 
 export const getTorrent = (url: string): Promise<string | undefined> =>
   get(url).then((data) => {

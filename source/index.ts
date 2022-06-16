@@ -5,8 +5,9 @@ import chalk from "chalk";
 
 import {
   lookup,
-  getRecentPosts,
   searchPosts,
+  getTopPosts,
+  getRecentPosts,
   getTorrent,
   Post,
 } from "./mactorrents";
@@ -53,11 +54,6 @@ const posts = (posts: Post[]) =>
       console.log(`${progressChalk("⚃")} Done.`);
     });
 
-const recent = () => {
-  console.log(`${progressChalk("⚀")} Fetching recent posts...`);
-  getRecentPosts().then(posts);
-};
-
 const search = (argv: string[]) => {
   if (argv.length == 0) {
     console.error(errorChalk("No search query given."));
@@ -67,6 +63,16 @@ const search = (argv: string[]) => {
   const s = argv.join(" ");
   console.log(`${progressChalk("⚀")} Searching for "${s}"...`);
   searchPosts(s).then(posts);
+};
+
+const top = () => {
+  console.log(`${progressChalk("⚀")} Fetching top posts...`);
+  getTopPosts().then(posts);
+};
+
+const recent = () => {
+  console.log(`${progressChalk("⚀")} Fetching recent posts...`);
+  getRecentPosts().then(posts);
 };
 
 const failedToConnect = () => {
@@ -81,9 +87,10 @@ mac-torrents <command>
 
 Usage:
 
-mac-torrents <query>        Search for torrents
-mac-torrents search <query> Search for torrents
-mac-torrents recent         Show recent torrents
+mac-torrents <query>        Search for posts
+mac-torrents search <query> Search for posts
+mac-torrents top            Show top posts
+mac-torrents recent         Show recent posts
 mac-torrents help           Show this help message
 
   `.trim()
@@ -94,6 +101,7 @@ lookup()
   .then(() => {
     const argv = process.argv.splice(2);
     if (argv.length == 0 || argv[0] == "help") help();
+    else if (argv[0] == "top") top();
     else if (argv[0] == "recent") recent();
     else if (argv[0] == "search") search(argv.slice(1));
     else search(argv);
