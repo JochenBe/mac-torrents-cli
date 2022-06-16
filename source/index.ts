@@ -3,7 +3,13 @@
 import cliSelect from "cli-select";
 import chalk from "chalk";
 
-import { searchPosts, getRecentPosts, getTorrent, Post } from "./mactorrents";
+import {
+  lookup,
+  getRecentPosts,
+  searchPosts,
+  getTorrent,
+  Post,
+} from "./mactorrents";
 import { downloadTorrent, openTorrent } from "./torrent";
 
 const successChalk = chalk.green;
@@ -47,6 +53,11 @@ const posts = (posts: Post[]) =>
       console.log(`${progressChalk("⚃")} Done.`);
     });
 
+const recent = () => {
+  console.log(`${progressChalk("⚀")} Fetching recent posts...`);
+  getRecentPosts().then(posts);
+};
+
 const search = (argv: string[]) => {
   if (argv.length == 0) {
     console.error(errorChalk("No search query given."));
@@ -58,9 +69,8 @@ const search = (argv: string[]) => {
   searchPosts(s).then(posts);
 };
 
-const recent = () => {
-  console.log(`${progressChalk("⚀")} Fetching recent posts...`);
-  getRecentPosts().then(posts);
+const failedToConnect = () => {
+  console.error(errorChalk("Failed to connect to Mac Torrents."));
 };
 
 const help = () => {
@@ -80,8 +90,12 @@ mac-torrents help           Show this help message
   );
 };
 
-const argv = process.argv.splice(2);
-if (argv.length == 0 || argv[0] == "help") help();
-else if (argv[0] == "recent") recent();
-else if (argv[0] == "search") search(argv.slice(1));
-else search(argv);
+lookup()
+  .then(() => {
+    const argv = process.argv.splice(2);
+    if (argv.length == 0 || argv[0] == "help") help();
+    else if (argv[0] == "recent") recent();
+    else if (argv[0] == "search") search(argv.slice(1));
+    else search(argv);
+  })
+  .catch(failedToConnect);

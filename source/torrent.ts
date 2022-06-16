@@ -13,7 +13,6 @@ export const downloadTorrent = (torrent: string): Promise<string> =>
     );
 
     const file = fs.createWriteStream(path);
-
     https.get(torrent, (res) => {
       res.pipe(file);
 
@@ -28,4 +27,4 @@ export const downloadTorrent = (torrent: string): Promise<string> =>
     });
   });
 
-export const openTorrent = (path: string | undefined) => exec(`open ${path}`);
+export const openTorrent = (path: string) => exec(`open ${path}`);

@@ -1,6 +1,18 @@
 import https from "https";
+import path from "path";
+import dns from "dns";
 
 import * as cheerio from "cheerio";
+
+const url = "https://www.torrentmac.net";
+
+export const lookup = (): Promise<void> =>
+  new Promise((resolve, reject) => {
+    dns.lookup(url, (err) => {
+      if (err) reject();
+      else resolve();
+    });
+  });
 
 const get = (url: string): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -27,7 +39,7 @@ export type Post = {
 };
 
 const getPosts = (url: string): Promise<Post[]> =>
-  get("https://www.torrentmac.net" + url).then((data) => {
+  get(url).then((data) => {
     let posts: Post[] = [];
 
     const $ = cheerio.load(data);
@@ -46,13 +58,12 @@ const getPosts = (url: string): Promise<Post[]> =>
     return posts;
   });
 
-export const getRecentPosts = (): Promise<Post[]> => getPosts("/");
+export const getRecentPosts = (): Promise<Post[]> => getPosts(url);
 export const searchPosts = (s: string): Promise<Post[]> =>
-  getPosts("/?s=" + encodeURIComponent(s));
+  getPosts(path.join(url, "/?s=" + encodeURIComponent(s)));
 
 export const getTorrent = (url: string): Promise<string | undefined> =>
   get(url).then((data) => {
     const $ = cheerio.load(data);
-    const downloatBtn = $(".download-btn");
-    return downloatBtn.attr("href")?.trim();
+    return $(".download-btn").attr("href")?.trim();
   });
