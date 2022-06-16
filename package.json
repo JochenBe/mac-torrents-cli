@@ -1,6 +1,6 @@
 {
   "name": "mac-torrents-cli",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Mac Torrents CLI",
   "main": "dist/index.js",
   "bin": {
