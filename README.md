@@ -1,5 +1,13 @@
 # mac-torrents-cli
 
+## Installation
+
+```
+npm install --global mac-torrents-cli
+```
+
+## Usage
+
 ```
 mac-torrents <command>
 
