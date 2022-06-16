@@ -37,6 +37,7 @@ const get = (url: string): Promise<string> =>
 export type Post = {
   title: string;
   href: string;
+  date: string;
 };
 
 export const getTopPosts = (): Promise<Post[]> =>
@@ -44,16 +45,21 @@ export const getTopPosts = (): Promise<Post[]> =>
     let posts: Post[] = [];
 
     const $ = cheerio.load(data);
-    $(".wpp-post-title").each((_, pt) => {
-      const postTitle = $(pt);
+    $(".wpp-list li").each((_, p) => {
+      const post = $(p);
 
-      const title = postTitle.text().trim();
+      const a = post.find(".wpp-post-title");
+
+      const title = a.text().trim();
       if (title == "") return;
 
-      const href = postTitle.attr("href")?.trim();
+      const href = a.attr("href")?.trim();
       if (!href) return;
 
-      posts.push({ title, href });
+      const date = post.find(".wpp-date").text().slice(10).trim();
+      if (!date) return;
+
+      posts.push({ title, href, date });
     });
 
     return posts;
@@ -64,16 +70,21 @@ export const getRecentPosts = (): Promise<Post[]> =>
     let posts: Post[] = [];
 
     const $ = cheerio.load(data);
-    $(".post-title-small a").each((_, pt) => {
-      const postTitle = $(pt);
+    $(".type-3").each((_, p) => {
+      const post = $(p);
 
-      const title = postTitle.attr("title")?.trim();
+      const a = post.find(".post-title-small a");
+
+      const title = a.attr("title")?.trim();
       if (!title) return;
 
-      const href = postTitle.attr("href")?.trim();
+      const href = a.attr("href")?.trim();
       if (!href) return;
 
-      posts.push({ title, href });
+      const date = post.find("time").text().trim();
+      if (!date) return;
+
+      posts.push({ title, href, date });
     });
 
     return posts;
@@ -84,16 +95,21 @@ export const searchPosts = (s: string): Promise<Post[]> =>
     let posts: Post[] = [];
 
     const $ = cheerio.load(data);
-    $(".post-title a").each((_, pt) => {
-      const postTitle = $(pt);
+    $(".default-post").each((_, p) => {
+      const post = $(p);
 
-      const title = postTitle.attr("title")?.trim();
+      const a = post.find(".post-title a");
+
+      const title = a.attr("title")?.trim();
       if (!title) return;
 
-      const href = postTitle.attr("href")?.trim();
+      const href = a.attr("href")?.trim();
       if (!href) return;
 
-      posts.push({ title, href });
+      const date = post.find("time").text().trim();
+      if (!date) return;
+
+      posts.push({ title, href, date });
     });
 
     return posts;

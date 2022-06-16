@@ -18,20 +18,38 @@ const progressChalk = chalk.yellow;
 const errorChalk = chalk.red;
 
 const selectedChalk = successChalk;
+const dateChalk = chalk.gray;
+
 const unselectedSymbol = " ";
 const selectedSymbol = selectedChalk("⬇");
-const valueRenderer = (post: Post, selected: boolean = true) =>
-  selected ? selectedChalk(post.title) : post.title;
+const valueRenderer =
+  (max: number) =>
+  (post: Post, selected: boolean = true) => {
+    const title = post.title;
+    const date = " ".repeat(max - post.title.length + 1) + post.date;
 
-const posts = (posts: Post[]) =>
+    return (
+      (selected ? selectedChalk(title) : title) +
+      (selected ? date : dateChalk(date))
+    );
+  };
+
+const posts = (posts: Post[]) => {
+  if (posts.length == 0) {
+    console.log(errorChalk("No posts found."));
+    return;
+  }
+
+  const vr = valueRenderer(Math.max(...posts.map((p) => p.title.length)));
+
   cliSelect({
     values: posts,
     selected: selectedSymbol,
     unselected: unselectedSymbol,
-    valueRenderer,
+    valueRenderer: vr,
   })
     .then(({ value }) => {
-      console.log(`${selectedSymbol} ${valueRenderer(value)}`);
+      console.log(`${selectedSymbol} ${vr(value)}`);
       console.log(`${progressChalk("⚁")} Fetching torrent file url...`);
       return getTorrent(value.href);
     })
@@ -53,6 +71,7 @@ const posts = (posts: Post[]) =>
       openTorrent(path);
       console.log(`${progressChalk("⚃")} Done.`);
     });
+};
 
 const search = (argv: string[]) => {
   if (argv.length == 0) {
