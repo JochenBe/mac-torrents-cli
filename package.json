@@ -1,6 +1,6 @@
 {
   "name": "mac-torrents-cli",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Mac Torrents CLI",
   "main": "dist/index.js",
   "bin": {
@@ -19,7 +19,7 @@
   "homepage": "https://github.com/JochenBe/mac-torrents-cli#readme",
   "author": "JochenBe <jochenbernard@gmail.com>",
   "license": "MIT",
-  "private": true,
+  "private": false,
   "keywords": [
     "mac",
     "torrents",
